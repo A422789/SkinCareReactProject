@@ -55,15 +55,16 @@ export function RelatedProducts({ products }) {
         style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '1rem', scrollSnapType: 'x mandatory', scrollbarWidth: 'none' }}
       >
         {products.map((product, i) => (
-          <div key={product.id} style={{ width: '65%', flexShrink: 0, scrollSnapAlign: 'start' }} className="related-item">
+          <div key={product.id} style={{ flexShrink: 0, scrollSnapAlign: 'start' }} className="related-item">
             <ProductCard product={product} index={i} />
           </div>
         ))}
       </div>
       <style>{`
-        @media (min-width: 640px) { .related-item { width: 45%; } }
+        .related-item { width: 100%; }
+        @media (min-width: 640px) { .related-item { width: calc(50% - 0.5rem); } }
         @media (min-width: 768px) {
-          .related-item { width: 30%; }
+          .related-item { width: calc(25% - 0.95rem); }
           .related-scroll-btns { display: flex; }
         }
         .related-scroll-btns { display: none; }
