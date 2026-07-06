@@ -33,7 +33,7 @@ export function SiteHeader() {
 
         <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
           <img
-            src="/images/logo.png"
+            src={`${import.meta.env.BASE_URL}images/logo.png`}
             alt="HE Logo"
             style={{ height: '3rem', width: 'auto', objectFit: 'contain' }}
           />

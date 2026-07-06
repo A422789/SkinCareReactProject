@@ -44,7 +44,7 @@ export function CartDrawer() {
 
             {items.length === 0 ? (
               <div style={{ display: 'flex', flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', padding: '0 1.5rem' }}>
-                <img src="/images/logo.png" alt="HE Logo" style={{ height: '5rem', width: 'auto', objectFit: 'contain' }} />
+                <img src={`${import.meta.env.BASE_URL}images/logo.png`} alt="HE Logo" style={{ height: '5rem', width: 'auto', objectFit: 'contain' }} />
                 <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>Your bag is empty.</p>
                 <Link
                   to="/shop"

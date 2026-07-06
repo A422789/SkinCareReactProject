@@ -93,7 +93,7 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <main style={{ margin: '0 auto', display: 'flex', maxWidth: '32rem', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', padding: '6rem 1rem', textAlign: 'center' }}>
-        <img src="/images/logo.png" alt="HE Logo" style={{ height: '6rem', width: 'auto', objectFit: 'contain' }} />
+        <img src={`${import.meta.env.BASE_URL}images/logo.png`} alt="HE Logo" style={{ height: '6rem', width: 'auto', objectFit: 'contain' }} />
         <p style={{ color: 'var(--muted-foreground)' }}>Your bag is empty — add a ritual before checkout.</p>
         <Link
           to="/shop"

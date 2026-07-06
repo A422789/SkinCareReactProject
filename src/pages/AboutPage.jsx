@@ -18,7 +18,7 @@ export default function AboutPage() {
         />
         <motion.div {...fadeIn} style={{ margin: '0 auto', display: 'flex', maxWidth: '48rem', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', padding: '0 1rem', textAlign: 'center' }}>
           <img
-            src="/images/logo.png"
+            src={`${import.meta.env.BASE_URL}images/logo.png`}
             alt="HE gold monogram logo"
             style={{ height: '10rem', width: 'auto', objectFit: 'contain', display: 'block' }}
           />
@@ -37,7 +37,7 @@ export default function AboutPage() {
         <div style={{ margin: '0 auto', display: 'grid', maxWidth: '72rem', alignItems: 'center', gap: '3rem', padding: '0 1rem' }} className="about-grid">
           <motion.div {...fadeIn} style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden', borderRadius: '1rem', boxShadow: '0 30px 60px -25px rgba(120,90,50,0.45)' }}>
             <img
-              src="/images/body-splash.jpg"
+              src={`${import.meta.env.BASE_URL}images/body-splash.jpg`}
               alt="HE Signature Body Splash amid white jasmine blossoms"
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
@@ -81,7 +81,7 @@ export default function AboutPage() {
           </motion.div>
           <motion.div {...fadeIn} style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden', borderRadius: '1rem', boxShadow: '0 30px 60px -25px rgba(120,90,50,0.45)' }} className="about-order-2">
             <img
-              src="/images/serum.jpg"
+              src={`${import.meta.env.BASE_URL}images/serum.jpg`}
               alt="HE Hydrating Serum with dried botanicals"
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />

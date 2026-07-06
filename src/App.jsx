@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import { CartProvider } from './lib/cart-context'
 import { SiteHeader } from './components/SiteHeader'
 import { SiteFooter } from './components/SiteFooter'
@@ -15,7 +15,7 @@ import CheckoutPage from './pages/CheckoutPage'
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <CartProvider>
         <SiteHeader />
         <Routes>
@@ -32,6 +32,6 @@ export default function App() {
         <SiteFooter />
         <CartDrawer />
       </CartProvider>
-    </BrowserRouter>
+    </Router>
   )
 }

@@ -21,7 +21,7 @@ export default function CartPage() {
 
       {items.length === 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', padding: '4rem 0' }}>
-          <img src="/images/logo.png" alt="HE Logo" style={{ height: '6rem', width: 'auto', objectFit: 'contain' }} />
+          <img src={`${import.meta.env.BASE_URL}images/logo.png`} alt="HE Logo" style={{ height: '6rem', width: 'auto', objectFit: 'contain' }} />
           <p style={{ color: 'var(--muted-foreground)' }}>Your bag is empty — your ritual awaits.</p>
           <Link
             to="/shop"

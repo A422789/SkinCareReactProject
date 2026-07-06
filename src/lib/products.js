@@ -8,7 +8,7 @@ export const products = [
     tagline: 'Light · Fresh · Refreshing',
     category: 'Body Splash',
     price: 38,
-    image: '/images/body-splash.jpg',
+    image: import.meta.env.BASE_URL + 'images/body-splash.jpg',
     description:
       'A refreshing brume parfumée that leaves your skin lightly perfumed all day. Delicate notes of white florals and warm amber settle into a soft, radiant veil — for all skin types.',
     ingredients:
@@ -25,7 +25,7 @@ export const products = [
     tagline: 'Hydrate · Repair · Renew',
     category: 'Serum',
     price: 62,
-    image: '/images/serum.jpg',
+    image: import.meta.env.BASE_URL + 'images/serum.jpg',
     description:
       'A featherweight elixir with Hyaluronic Acid and Niacinamide that drenches skin in moisture, refines texture, and restores a luminous, glass-like finish overnight.',
     ingredients:
@@ -42,7 +42,7 @@ export const products = [
     tagline: 'Soft · Romantic · Dewy',
     category: 'Body Splash',
     price: 42,
-    image: '/images/rose-splash.png',
+    image: import.meta.env.BASE_URL + 'images/rose-splash.png',
     description:
       'The newest addition to the HE collection. Velvety Damask rose petals folded into a dewy mist with hints of pink pepper and musk — a modern romance for the skin.',
     ingredients:
@@ -60,7 +60,7 @@ export const products = [
     tagline: 'Calm · Restore · Glow',
     category: 'Serum',
     price: 68,
-    image: '/images/rose-serum.png',
+    image: import.meta.env.BASE_URL + 'images/rose-serum.png',
     description:
       'A calming rose-infused serum from our new Rose line. Rosehip oil and squalane comfort sensitive skin while peptides encourage a plump, petal-soft glow.',
     ingredients:
@@ -79,7 +79,7 @@ export const products = [
     category: 'Skincare',
     price: 48,
     compareAtPrice: 58,
-    image: '/images/body-cream.png',
+    image: import.meta.env.BASE_URL + 'images/body-cream.png',
     description:
       'A rich, cocooning cream that melts into skin with shea butter and jasmine wax. Skin is left cashmere-soft, deeply nourished, and delicately scented.',
     ingredients:
@@ -97,7 +97,7 @@ export const products = [
     category: 'Skincare',
     price: 32,
     compareAtPrice: 40,
-    image: '/images/face-mist.png',
+    image: import.meta.env.BASE_URL + 'images/face-mist.png',
     description:
       'A fine, weightless veil of botanical waters and glow-boosting minerals. Sets makeup, refreshes midday, and leaves a lit-from-within luminosity.',
     ingredients:

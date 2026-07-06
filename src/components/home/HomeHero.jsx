@@ -85,7 +85,7 @@ export function HomeHero() {
             style={{ width: '42%' }}
           >
             <FloatingBottle
-              src="/images/body-splash.jpg"
+              src={`${import.meta.env.BASE_URL}images/body-splash.jpg`}
               alt="HE Signature Body Splash bottle with gold cap"
               priority
             />
@@ -97,7 +97,7 @@ export function HomeHero() {
             style={{ width: '38%', paddingBottom: '2.5rem' }}
           >
             <FloatingBottle
-              src="/images/serum.jpg"
+              src={`${import.meta.env.BASE_URL}images/serum.jpg`}
               alt="HE Hydrating Serum dropper bottle"
               delayed
               priority

@@ -6,7 +6,7 @@ export function SiteFooter() {
       <div style={{ margin: '0 auto', display: 'flex', maxWidth: '72rem', flexDirection: 'column', alignItems: 'center', gap: '2rem', padding: '3.5rem 1rem' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
           <img
-            src="/images/logo.png"
+            src={`${import.meta.env.BASE_URL}images/logo.png`}
             alt="HE Logo"
             style={{ height: '4rem', width: 'auto', objectFit: 'contain' }}
           />

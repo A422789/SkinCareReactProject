@@ -4,19 +4,19 @@ import { motion } from 'framer-motion'
 const categories = [
   {
     name: 'Body Splash',
-    image: '/images/body-splash.jpg',
+    image: import.meta.env.BASE_URL + 'images/body-splash.jpg',
     href: '/shop?category=Body+Splash',
     blurb: 'Brume parfumée for skin lightly scented all day.',
   },
   {
     name: 'Serum',
-    image: '/images/serum.jpg',
+    image: import.meta.env.BASE_URL + 'images/serum.jpg',
     href: '/shop?category=Serum',
     blurb: 'Potent elixirs for hydration, repair, and glow.',
   },
   {
     name: 'Skincare',
-    image: '/images/body-cream.png',
+    image: import.meta.env.BASE_URL + 'images/body-cream.png',
     href: '/shop?category=Skincare',
     blurb: 'Everyday rituals of nourishment and radiance.',
   },
