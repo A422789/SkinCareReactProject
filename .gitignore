@@ -1,0 +1,15 @@
+# Dependency directories
+node_modules/
+dist/
+.env
+.env.local
+
+# WhatsApp session cache
+Backend/whatsapp_session/
+Backend/.wwebjs_cache/
+Backend/logs/
+
+# IDE files
+.vscode/
+.idea/
+.gemini/
