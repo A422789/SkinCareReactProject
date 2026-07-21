@@ -1,6 +1,4 @@
-const { Client, RemoteAuth } = require('whatsapp-web.js');
-const { MongoStore } = require('wwebjs-mongo');
-const mongoose = require('mongoose');
+const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 
 const logger = require('./logger');
@@ -9,11 +7,11 @@ let client = null;
 let currentQR = null;
 let isReady = false;
 
-// Initialize WhatsApp client with MongoDB remote persistence
+const sessionPath = '/app/whatsapp_session';
+
+// Initialize WhatsApp client with local disk persistence
 const initWhatsApp = async () => {
   try {
-    const store = new MongoStore({ mongoose: mongoose });
-
     const puppeteerOptions = {
       headless: true,
       args: [
@@ -33,12 +31,12 @@ const initWhatsApp = async () => {
       puppeteerOptions.executablePath = process.env.CHROMIUM_PATH;
     } else {
       // Linux fallback: common Chromium locations
+      const fs2 = require('fs');
       const linuxPaths = [
         '/usr/bin/chromium',
         '/usr/bin/chromium-browser',
         '/usr/bin/google-chrome',
       ];
-      const fs2 = require('fs');
       const foundPath = linuxPaths.find(p => fs2.existsSync(p));
       if (foundPath) {
         puppeteerOptions.executablePath = foundPath;
@@ -46,14 +44,11 @@ const initWhatsApp = async () => {
     }
 
     client = new Client({
-      authStrategy: new RemoteAuth({
-        clientId: 'skincare_whatsapp',
-        store: store,
-        backupSyncIntervalMs: 300000, // Backup session every 5 minutes
+      authStrategy: new LocalAuth({
+        dataPath: sessionPath,
       }),
       puppeteer: puppeteerOptions,
     });
-
 
     client.on('qr', async (qr) => {
       currentQR = qr;
@@ -74,7 +69,7 @@ const initWhatsApp = async () => {
 
     client.on('disconnected', (reason) => {
       isReady = false;
-      logger.warn(`WhatsApp client disconnected: ${reason}. Session is persisted in MongoDB.`);
+      logger.warn(`WhatsApp client disconnected: ${reason}`);
     });
 
     await client.initialize();
@@ -82,6 +77,7 @@ const initWhatsApp = async () => {
     logger.error(`WhatsApp init error: ${error.message}`);
   }
 };
+
 
 const sendWhatsAppMessage = async (phone, message) => {
   if (!client || !isReady) {
