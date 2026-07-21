@@ -12,12 +12,22 @@ const sessionPath = '/app/whatsapp_session';
 // Initialize WhatsApp client with local disk persistence
 const initWhatsApp = async () => {
   try {
-    // Remove Chromium SingletonLock to prevent "profile in use" errors on container restart
+    // Remove stale Chromium lock files (symlinks) left by previous container
+    // existsSync() follows symlinks and returns false for broken ones → use lstatSync instead
     const fs = require('fs');
-    const lockFile = `${sessionPath}/session/SingletonLock`;
-    if (fs.existsSync(lockFile)) {
-      fs.unlinkSync(lockFile);
-      logger.info('Removed stale Chromium SingletonLock file.');
+    const lockFiles = [
+      `${sessionPath}/session/SingletonLock`,
+      `${sessionPath}/session/SingletonCookie`,
+      `${sessionPath}/session/SingletonSocket`,
+    ];
+    for (const lockFile of lockFiles) {
+      try {
+        fs.lstatSync(lockFile); // throws if file/symlink doesn't exist
+        fs.unlinkSync(lockFile);
+        logger.info(`Removed stale lock file: ${lockFile}`);
+      } catch (_) {
+        // File doesn't exist, no action needed
+      }
     }
 
     const puppeteerOptions = {
