@@ -8,6 +8,7 @@ dist/
 Backend/logs/
 Backend/whatsapp_session/
 Backend/.wwebjs_cache/
+.wwebjs_auth/
 
 # Cypress & IDEs
 cypress/screenshots/

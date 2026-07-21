@@ -14,7 +14,7 @@ A premium skincare e-commerce platform featuring an elegant, modern frontend sto
 1. **WhatsApp Messaging & Automation**:
    - Automated notification dispatches to store owners upon new orders or messages.
    - Direct communication channels allowing administrators to message customers from the Dashboard via WhatsApp.
-   - Purely localized session authentication stored at `/Backend/whatsapp_session`.
+   - Purely cloud-based session authentication persisted in MongoDB Atlas via `wwebjs-mongo` (no local session files required).
 
 2. **Dynamic Live Analytics**:
    - Automatic recording of unique daily visits.
