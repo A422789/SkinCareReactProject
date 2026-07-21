@@ -23,7 +23,7 @@ const settingsUploadFields = upload.fields([
 const singleTestimonialUpload = upload.single('screenshot');
 
 // All routes are private (Admin only)
-router.get('/', protect, getSettings);
+router.get('/', getSettings);
 router.put('/', protect, settingsUploadFields, updateSettings);
 
 // Testimonials CRUD Routes

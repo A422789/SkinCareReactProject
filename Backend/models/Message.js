@@ -8,6 +8,9 @@ const messageSchema = new mongoose.Schema(
     subject: { type: String, required: true },
     message: { type: String, required: true },
     read: { type: Boolean, default: false },
+    replied: { type: Boolean, default: false },
+    replyText: { type: String },
+    replyDate: { type: Date },
   },
   {
     timestamps: true,

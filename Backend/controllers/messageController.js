@@ -140,9 +140,15 @@ const replyToMessage = async (req, res, next) => {
       throw new ThirdPartyIntegrationError('Failed to send WhatsApp reply to customer');
     }
 
+    message.replied = true;
+    message.replyText = replyText;
+    message.replyDate = new Date();
+    await message.save();
+
     res.status(200).json({
       success: true,
       message: 'Reply sent successfully to customer via WhatsApp',
+      updatedMessage: message
     });
   } catch (error) {
     next(error);

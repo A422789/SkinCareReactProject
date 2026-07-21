@@ -2,7 +2,7 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 const fs = require('fs');
 const path = require('path');
-const redis = require('../config/redis');
+
 const logger = require('./logger');
 
 let client = null;
@@ -24,8 +24,25 @@ const initWhatsApp = async () => {
       ],
     };
 
+    // Platform-specific browser path resolution
     if (process.platform === 'win32') {
+      // Windows: use installed Chrome
       puppeteerOptions.executablePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+    } else if (process.env.CHROMIUM_PATH) {
+      // Docker / Linux: use path from environment variable
+      puppeteerOptions.executablePath = process.env.CHROMIUM_PATH;
+    } else {
+      // Linux fallback: common Chromium locations
+      const linuxPaths = [
+        '/usr/bin/chromium',
+        '/usr/bin/chromium-browser',
+        '/usr/bin/google-chrome',
+      ];
+      const fs2 = require('fs');
+      const foundPath = linuxPaths.find(p => fs2.existsSync(p));
+      if (foundPath) {
+        puppeteerOptions.executablePath = foundPath;
+      }
     }
 
     client = new Client({
@@ -56,9 +73,8 @@ const initWhatsApp = async () => {
       isReady = false;
       logger.warn(`WhatsApp client disconnected: ${reason}`);
       try {
-        await redis.del(REDIS_KEY);
         fs.rmSync(sessionPath, { recursive: true, force: true });
-        logger.info('Cleared local and Redis WhatsApp session data.');
+        logger.info('Cleared local WhatsApp session data.');
       } catch (err) {
         logger.error(`Error clearing session data: ${err.message}`);
       }

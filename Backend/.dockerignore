@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+.env
+.env.local
+logs
+*.log
+whatsapp_session
+.wwebjs_cache
+unit_tests
+tests
+jest.config.js
+jsconfig.json
+.gitignore

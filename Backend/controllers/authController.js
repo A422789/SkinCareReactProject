@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
-const redis = require('../config/redis');
+const BlacklistedToken = require('../models/BlacklistedToken');
 const bcrypt = require('bcryptjs');
 const { BadRequestError, AuthenticationError, InternalServerError } = require('../utils/customErrors');
 
@@ -36,7 +36,7 @@ const loginUser = async (req, res, next) => {
   }
 };
 
-// @desc    Logout user, destroy session & blacklist token in Redis
+// @desc    Logout user, destroy session & blacklist token in MongoDB
 // @route   POST /api/auth/logout
 // @access  Public
 const logoutUser = async (req, res, next) => {
@@ -47,8 +47,8 @@ const logoutUser = async (req, res, next) => {
       req.headers.authorization.startsWith('Bearer')
     ) {
       token = req.headers.authorization.split(' ')[1];
-      // Blacklist token in Redis for 12 hours (43200 seconds)
-      await redis.set(`blacklist:${token}`, 'true', { ex: 12 * 60 * 60 });
+      // Blacklist token in MongoDB (TTL index auto-cleans after 12 hours)
+      await BlacklistedToken.create({ token }).catch(() => {});
     }
 
     req.session.destroy((err) => {
@@ -80,7 +80,7 @@ const refreshUser = async (req, res, next) => {
       req.headers.authorization.startsWith('Bearer')
     ) {
       oldToken = req.headers.authorization.split(' ')[1];
-      await redis.set(`blacklist:${oldToken}`, 'true', { ex: 12 * 60 * 60 });
+      await BlacklistedToken.create({ token: oldToken }).catch(() => {});
     }
 
     // Generate new token

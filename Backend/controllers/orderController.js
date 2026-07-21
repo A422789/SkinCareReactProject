@@ -2,6 +2,7 @@ const Order = require('../models/Order');
 const Product = require('../models/Product');
 const PaymentType = require('../models/PaymentType');
 const { NotFoundError, BadRequestError } = require('../utils/customErrors');
+const { sendWhatsAppMessage } = require('../utils/whatsapp');
 
 // Helper to generate a unique orderId (e.g., HE-123456)
 const generateUniqueOrderId = async () => {
@@ -45,6 +46,7 @@ const createOrder = async (req, res, next) => {
 
     let calculatedTotalPrice = 0;
     const itemsToSave = [];
+    const itemDetailsForNotification = [];
 
     // Validate and fetch price/stock for each product
     for (const item of orderItems) {
@@ -74,6 +76,13 @@ const createOrder = async (req, res, next) => {
         quantity: item.quantity,
         price: currentPrice,
       });
+
+      // Save name for notification template
+      itemDetailsForNotification.push({
+        name: product.name.ar || product.name.en || 'منتج',
+        quantity: item.quantity,
+        price: currentPrice
+      });
     }
 
     const orderId = await generateUniqueOrderId();
@@ -88,6 +97,30 @@ const createOrder = async (req, res, next) => {
 
     const createdOrder = await order.save();
 
+    // Send WhatsApp notification to Admin (non-blocking)
+    const adminWhatsApp = process.env.ADMIN_WHATSAPP;
+    if (adminWhatsApp) {
+      const itemsList = itemDetailsForNotification
+        .map(item => `- ${item.name} (الكمية: ${item.quantity}) - ${item.price * item.quantity} ج.م`)
+        .join('\n');
+
+      const whatsappMessage = `🛍️ *طلب جديد رقم ${orderId}*
+
+👤 *العميل:* ${customer.name}
+📞 *الهاتف:* ${customer.phone}
+📍 *العنوان:* ${customer.city}، ${customer.address}
+
+📦 *المنتجات:*
+${itemsList}
+
+💰 *الإجمالي:* ${calculatedTotalPrice} ج.م
+💳 *طريقة الدفع:* ${selectedPayment.name}`;
+
+      sendWhatsAppMessage(adminWhatsApp, whatsappMessage).catch(err => {
+        console.error('Failed to send order notification via WhatsApp:', err.message);
+      });
+    }
+
     res.status(201).json(createdOrder);
   } catch (error) {
     next(error);
@@ -100,7 +133,7 @@ const createOrder = async (req, res, next) => {
 const getOrders = async (req, res, next) => {
   try {
     const orders = await Order.find({})
-      .populate('orderItems.product', 'name price image')
+      .populate('orderItems.product', 'name price image tagline ingredients howToUse')
       .populate('paymentType', 'name id');
     res.status(200).json(orders);
   } catch (error) {
@@ -114,7 +147,7 @@ const getOrders = async (req, res, next) => {
 const getOrderById = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id)
-      .populate('orderItems.product', 'name price image')
+      .populate('orderItems.product', 'name price image tagline ingredients howToUse')
       .populate('paymentType', 'name id');
 
     if (!order) {
@@ -131,46 +164,61 @@ const getOrderById = async (req, res, next) => {
 // @access  Private/Admin
 const updateOrder = async (req, res, next) => {
   try {
-    const { status } = req.body;
+    const { status, paymentType } = req.body;
     const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
-
-    if (!status || !validStatuses.includes(status)) {
-      throw new BadRequestError('Please provide a valid order status');
-    }
 
     const order = await Order.findById(req.params.id);
     if (!order) {
       throw new NotFoundError('Order not found');
     }
 
-    // Handle stock restoration if order is cancelled
-    if (status === 'Cancelled' && order.status !== 'Cancelled') {
-      for (const item of order.orderItems) {
-        const product = await Product.findById(item.product);
-        if (product) {
-          product.stock += item.quantity;
-          await product.save();
-        }
+    if (status) {
+      if (!validStatuses.includes(status)) {
+        throw new BadRequestError('Please provide a valid order status');
       }
-    }
-    // Handle stock re-deduction if order is un-cancelled (e.g. moved back to Pending)
-    else if (order.status === 'Cancelled' && status !== 'Cancelled') {
-      for (const item of order.orderItems) {
-        const product = await Product.findById(item.product);
-        if (product) {
-          if (product.stock < item.quantity) {
-            throw new BadRequestError(`Cannot restore order status. Insufficient stock for product: ${product.name.en}`);
+
+      // Handle stock restoration if order is cancelled
+      if (status === 'Cancelled' && order.status !== 'Cancelled') {
+        for (const item of order.orderItems) {
+          const product = await Product.findById(item.product);
+          if (product) {
+            product.stock += item.quantity;
+            await product.save();
           }
-          product.stock -= item.quantity;
-          await product.save();
         }
       }
+      // Handle stock re-deduction if order is un-cancelled (e.g. moved back to Pending)
+      else if (order.status === 'Cancelled' && status !== 'Cancelled') {
+        for (const item of order.orderItems) {
+          const product = await Product.findById(item.product);
+          if (product) {
+            if (product.stock < item.quantity) {
+              throw new BadRequestError(`Cannot restore order status. Insufficient stock for product: ${product.name.en}`);
+            }
+            product.stock -= item.quantity;
+            await product.save();
+          }
+        }
+      }
+      order.status = status;
     }
 
-    order.status = status;
+    if (paymentType) {
+      const selectedPayment = await PaymentType.findById(paymentType);
+      if (!selectedPayment || !selectedPayment.isActive) {
+        throw new BadRequestError('Invalid or inactive payment type selected');
+      }
+      order.paymentType = selectedPayment._id;
+    }
+
     const updatedOrder = await order.save();
 
-    res.status(200).json(updatedOrder);
+    // Populate for response
+    const populated = await Order.findById(updatedOrder._id)
+      .populate('orderItems.product', 'name price image tagline ingredients howToUse')
+      .populate('paymentType', 'name id');
+
+    res.status(200).json(populated);
   } catch (error) {
     next(error);
   }

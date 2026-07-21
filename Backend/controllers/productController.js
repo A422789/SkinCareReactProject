@@ -1,6 +1,8 @@
 const Product = require('../models/Product');
 const { uploadToCloudinary } = require('../middleware/uploadMiddleware');
 const { NotFoundError, BadRequestError } = require('../utils/customErrors');
+const cloudinary = require('cloudinary').v2;
+const translateToArabic = require('../utils/translate');
 
 // @desc    Get all products
 // @route   GET /api/products
@@ -56,19 +58,30 @@ const createProduct = async (req, res, next) => {
 
     let imageUrl = '';
     if (req.file) {
-      // Upload image buffer to Cloudinary
       imageUrl = await uploadToCloudinary(req.file.buffer);
+    } else if (req.body.image && req.body.image.startsWith('data:image')) {
+      const uploadRes = await cloudinary.uploader.upload(req.body.image, { folder: 'products' });
+      imageUrl = uploadRes.secure_url;
+    } else if (req.body.image) {
+      imageUrl = req.body.image;
     }
 
+    // Auto-translate missing Arabic fields
+    const translatedNameAr = (name && name.ar) ? name.ar : await translateToArabic(name.en);
+    const translatedTaglineAr = (tagline && tagline.ar) ? tagline.ar : (tagline?.en ? await translateToArabic(tagline.en) : '');
+    const translatedDescriptionAr = (description && description.ar) ? description.ar : (description?.en ? await translateToArabic(description.en) : '');
+    const translatedIngredientsAr = (ingredients && ingredients.ar) ? ingredients.ar : (ingredients?.en ? await translateToArabic(ingredients.en) : '');
+    const translatedHowToUseAr = (howToUse && howToUse.ar) ? howToUse.ar : (howToUse?.en ? await translateToArabic(howToUse.en) : '');
+
     const product = new Product({
-      name,
-      tagline,
+      name: { en: name.en, ar: translatedNameAr },
+      tagline: { en: tagline?.en || '', ar: translatedTaglineAr },
       category,
       price,
       stock,
-      description,
-      ingredients,
-      howToUse,
+      description: { en: description?.en || '', ar: translatedDescriptionAr },
+      ingredients: { en: ingredients?.en || '', ar: translatedIngredientsAr },
+      howToUse: { en: howToUse?.en || '', ar: translatedHowToUseAr },
       image: imageUrl,
       isNewArrival: isNewArrival === 'true' || isNewArrival === true,
       isBestSeller: isBestSeller === 'true' || isBestSeller === true,
@@ -109,15 +122,30 @@ const updateProduct = async (req, res, next) => {
       offerPrice,
     } = req.body;
 
-    // Update basic fields if they exist
-    if (name) product.name = name;
-    if (tagline) product.tagline = tagline;
+    // Update basic fields if they exist with auto-translation fallback
+    if (name) {
+      const translatedNameAr = (name.ar) ? name.ar : await translateToArabic(name.en);
+      product.name = { en: name.en, ar: translatedNameAr };
+    }
+    if (tagline) {
+      const translatedTaglineAr = (tagline.ar) ? tagline.ar : (tagline.en ? await translateToArabic(tagline.en) : '');
+      product.tagline = { en: tagline.en || '', ar: translatedTaglineAr };
+    }
     if (category) product.category = category;
     if (price) product.price = price;
     if (stock !== undefined) product.stock = stock;
-    if (description) product.description = description;
-    if (ingredients) product.ingredients = ingredients;
-    if (howToUse) product.howToUse = howToUse;
+    if (description) {
+      const translatedDescriptionAr = (description.ar) ? description.ar : (description.en ? await translateToArabic(description.en) : '');
+      product.description = { en: description.en || '', ar: translatedDescriptionAr };
+    }
+    if (ingredients) {
+      const translatedIngredientsAr = (ingredients.ar) ? ingredients.ar : (ingredients.en ? await translateToArabic(ingredients.en) : '');
+      product.ingredients = { en: ingredients.en || '', ar: translatedIngredientsAr };
+    }
+    if (howToUse) {
+      const translatedHowToUseAr = (howToUse.ar) ? howToUse.ar : (howToUse.en ? await translateToArabic(howToUse.en) : '');
+      product.howToUse = { en: howToUse.en || '', ar: translatedHowToUseAr };
+    }
     
     if (isNewArrival !== undefined) {
       product.isNewArrival = isNewArrival === 'true' || isNewArrival === true;
@@ -136,6 +164,11 @@ const updateProduct = async (req, res, next) => {
     if (req.file) {
       const imageUrl = await uploadToCloudinary(req.file.buffer);
       product.image = imageUrl;
+    } else if (req.body.image && req.body.image.startsWith('data:image')) {
+      const uploadRes = await cloudinary.uploader.upload(req.body.image, { folder: 'products' });
+      product.image = uploadRes.secure_url;
+    } else if (req.body.image !== undefined) {
+      product.image = req.body.image;
     }
 
     const updatedProduct = await product.save();

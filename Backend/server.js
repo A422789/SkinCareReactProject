@@ -18,8 +18,10 @@ const messageRoutes = require('./routes/messageRoutes');
 const { initWhatsApp } = require('./utils/whatsapp');
 const logger = require('./utils/logger');
 const { globalLimiter, authLimiter } = require('./middleware/rateLimiter');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const { encryptSessionData, decryptSessionData } = require('./utils/sessionCrypto');
+
+const { ForbiddenError } = require('./utils/customErrors');
 
 // Connect to database, then initialize WhatsApp
 connectDB().then(() => {
@@ -28,11 +30,24 @@ connectDB().then(() => {
 
 const app = express();
 
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? [process.env.DASHBOARD_URL, process.env.WEBPAGE_URL].filter(Boolean)
+  : ['http://localhost:5173', 'http://localhost:5174',];
+
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? [process.env.DASHBOARD_URL, process.env.WEBPAGE_URL]
-    : ['http://localhost:3000', 'http://localhost:5173'],
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    const localAllowed = ['http://localhost:5173', 'http://localhost:5174'];
+    if (localAllowed.includes(origin) || origin === 'null') {
+      return callback(null, true);
+    }
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    } else {
+      return callback(new ForbiddenError('Not allowed by CORS'), false);
+    }
+  },
   credentials: true,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   allowedHeaders: 'Content-Type, Authorization',
@@ -41,7 +56,8 @@ app.use(cors({
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Global Rate Limiter
 app.use(globalLimiter);
@@ -49,7 +65,7 @@ app.use(globalLimiter);
 // Session Configuration using MongoStore
 app.use(
   session({
-    genid: (req) => uuid.v4(),
+    genid: (req) => crypto.randomUUID(),
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
@@ -106,3 +122,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);
 });
+
+module.exports = app;

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const redis = require('../config/redis');
+const BlacklistedToken = require('../models/BlacklistedToken');
 const { AuthenticationError } = require('../utils/customErrors');
 
 const protect = async (req, res, next) => {
@@ -23,8 +23,8 @@ const protect = async (req, res, next) => {
     ) {
       token = req.headers.authorization.split(' ')[1];
 
-      // Check if token is blacklisted in Redis
-      const isBlacklisted = await redis.get(`blacklist:${token}`);
+      // Check if token is blacklisted in MongoDB
+      const isBlacklisted = await BlacklistedToken.exists({ token });
       if (isBlacklisted) {
         throw new AuthenticationError('Not authorized, token has been revoked');
       }

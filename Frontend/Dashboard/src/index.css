@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-serif: 'Playfair Display', serif;
+  --font-serif: 'Jost', sans-serif;
   --font-sans: 'Jost', sans-serif;
 }
 
@@ -213,4 +213,39 @@ body {
 .drop-zone.drag-over {
   border-color: var(--gold);
   background-color: var(--warning-bg);
+}
+
+/* ───── Bouncing Dots Loader ───── */
+@keyframes bounce-dots {
+  0%, 80%, 100% { 
+    transform: translateY(0);
+    opacity: 0.3;
+  }
+  40% { 
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+.bouncing-loader {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.bouncing-loader span {
+  width: 5px;
+  height: 5px;
+  background-color: currentColor;
+  border-radius: 50%;
+  display: inline-block;
+  animation: bounce-dots 1.4s infinite ease-in-out both;
+}
+
+.bouncing-loader span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.bouncing-loader span:nth-child(2) {
+  animation-delay: -0.16s;
 }

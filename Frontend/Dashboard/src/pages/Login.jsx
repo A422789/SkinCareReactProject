@@ -1,23 +1,76 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Lock, Mail, ArrowRight } from 'lucide-react';
+import { Lock, Mail, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
+import Loader from '../components/Loader';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({ email: '', password: '' });
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const { t, language } = useLanguage();
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (email === 'admin@admin.com' && password === 'admin123') {
-      localStorage.setItem('isAdminLoggedIn', 'true');
+  React.useEffect(() => {
+    if (localStorage.getItem('isAdminLoggedIn') === 'true') {
       navigate('/');
-    } else {
-      setError('Invalid credentials. Hint: admin@admin.com / admin123');
+    }
+  }, [navigate]);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setFieldErrors({ email: '', password: '' });
+
+    const errors = {};
+    if (!email) {
+      errors.email = language === 'ar' ? 'البريد الإلكتروني مطلوب' : 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      errors.email = language === 'ar' ? 'يرجى إدخال بريد إلكتروني صالح' : 'Please enter a valid email address';
+    }
+
+    if (!password) {
+      errors.password = language === 'ar' ? 'كلمة المرور مطلوبة' : 'Password is required';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('isAdminLoggedIn', 'true');
+        localStorage.setItem('adminToken', data.token);
+        localStorage.setItem('adminTokenTime', Date.now().toString());
+        localStorage.setItem('adminUser', JSON.stringify({ email: data.email, id: data._id }));
+        navigate('/');
+      } else {
+        setError(data.message || t('invalidCredentials'));
+      }
+    } catch (err) {
+      console.error(err);
+      setError(language === 'ar' ? 'فشل الاتصال بالسيرفر. يرجى التحقق من تشغيل السيرفر.' : 'Connection to server failed. Please check if the server is running.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -47,10 +100,10 @@ export default function Login() {
               boxShadow: 'var(--shadow-gold)'
             }}
           >
-            <Lock className="w-8 h-8" style={{ color: '#fdfaf4' }} />
+            <Lock className="w-8 h-8" style={{ color: 'var(--gold-text)' }} />
           </div>
-          <h1 className="text-3xl font-bold mb-2 font-serif" style={{ color: 'var(--foreground)' }}>Welcome Back</h1>
-          <p style={{ color: 'var(--foreground-secondary)' }}>Sign in to SkinCare Dashboard</p>
+          <h1 className="text-3xl font-bold mb-2 font-serif" style={{ color: 'var(--foreground)' }}>{t('loginTitle')}</h1>
+          <p style={{ color: 'var(--foreground-secondary)' }}>{t('loginSubtitle')}</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
@@ -70,67 +123,96 @@ export default function Login() {
           )}
 
           <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>Email Address</label>
+            <label className="block text-sm font-medium mb-2 text-start" style={{ color: 'var(--foreground)' }}>{t('emailLabel')}</label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <div className="absolute inset-y-0 start-0 ps-4 flex items-center pointer-events-none">
                 <Mail className="h-5 w-5" style={{ color: 'var(--foreground-muted)' }} />
               </div>
               <input
                 type="email"
-                required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="block w-full pl-11 pr-4 py-3 rounded-xl text-sm transition-all outline-none"
+                className="block w-full ps-11 pe-4 py-3 rounded-xl text-sm transition-all outline-none text-start"
                 placeholder="admin@admin.com"
                 style={{
                   backgroundColor: 'var(--input-bg)',
-                  border: '1px solid var(--input-border)',
+                  border: fieldErrors.email ? '1px solid var(--destructive)' : '1px solid var(--input-border)',
                   color: 'var(--foreground)'
                 }}
-                onFocus={(e) => { e.target.style.borderColor = 'var(--gold)'; e.target.style.boxShadow = '0 0 0 3px rgba(176,141,87,0.15)'; }}
-                onBlur={(e) => { e.target.style.borderColor = 'var(--input-border)'; e.target.style.boxShadow = 'none'; }}
+                onFocus={(e) => { e.target.style.borderColor = fieldErrors.email ? 'var(--destructive)' : 'var(--gold)'; e.target.style.boxShadow = '0 0 0 3px rgba(176,141,87,0.15)'; }}
+                onBlur={(e) => { e.target.style.borderColor = fieldErrors.email ? 'var(--destructive)' : 'var(--input-border)'; e.target.style.boxShadow = 'none'; }}
               />
             </div>
+            {fieldErrors.email && (
+              <p className="text-xs text-start mt-1 text-red-500 font-medium">
+                {fieldErrors.email}
+              </p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--foreground)' }}>Password</label>
+            <label className="block text-sm font-medium mb-2 text-start" style={{ color: 'var(--foreground)' }}>{t('passwordLabel')}</label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <div className="absolute inset-y-0 start-0 ps-4 flex items-center pointer-events-none">
                 <Lock className="h-5 w-5" style={{ color: 'var(--foreground-muted)' }} />
               </div>
               <input
-                type="password"
-                required
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full pl-11 pr-4 py-3 rounded-xl text-sm transition-all outline-none"
+                className="block w-full ps-11 pe-12 py-3 rounded-xl text-sm transition-all outline-none text-start"
                 placeholder="••••••••"
                 style={{
                   backgroundColor: 'var(--input-bg)',
-                  border: '1px solid var(--input-border)',
+                  border: fieldErrors.password ? '1px solid var(--destructive)' : '1px solid var(--input-border)',
                   color: 'var(--foreground)'
                 }}
-                onFocus={(e) => { e.target.style.borderColor = 'var(--gold)'; e.target.style.boxShadow = '0 0 0 3px rgba(176,141,87,0.15)'; }}
-                onBlur={(e) => { e.target.style.borderColor = 'var(--input-border)'; e.target.style.boxShadow = 'none'; }}
+                onFocus={(e) => { e.target.style.borderColor = fieldErrors.password ? 'var(--destructive)' : 'var(--gold)'; e.target.style.boxShadow = '0 0 0 3px rgba(176,141,87,0.15)'; }}
+                onBlur={(e) => { e.target.style.borderColor = fieldErrors.password ? 'var(--destructive)' : 'var(--input-border)'; e.target.style.boxShadow = 'none'; }}
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 end-0 pe-4 flex items-center"
+                style={{ color: 'var(--foreground-muted)' }}
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
             </div>
+            {fieldErrors.password && (
+              <p className="text-xs text-start mt-1 text-red-500 font-medium">
+                {fieldErrors.password}
+              </p>
+            )}
           </div>
 
           <button
             type="submit"
+            disabled={isLoading}
             className="w-full flex items-center justify-center gap-2 font-medium py-3 px-4 rounded-xl transition-all active:scale-[0.98]"
             style={{
               background: 'linear-gradient(135deg, var(--gold), var(--gold-dark))',
-              color: '#fdfaf4',
-              boxShadow: 'var(--shadow-gold)'
+              color: 'var(--gold-text)',
+              boxShadow: 'var(--shadow-gold)',
+              opacity: isLoading ? 0.7 : 1,
+              cursor: isLoading ? 'not-allowed' : 'pointer'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+            onMouseEnter={(e) => { if (!isLoading) e.currentTarget.style.opacity = '0.9'; }}
+            onMouseLeave={(e) => { if (!isLoading) e.currentTarget.style.opacity = '1'; }}
           >
-            Sign In
-            <ArrowRight className="w-5 h-5" />
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <Loader />
+                <span>{t('loggingIn')}</span>
+              </div>
+            ) : (
+              <>
+                <span>{t('loginBtn')}</span>
+                <ArrowRight className="w-5 h-5 rtl:rotate-180" />
+              </>
+            )}
           </button>
+
         </form>
       </motion.div>
     </div>

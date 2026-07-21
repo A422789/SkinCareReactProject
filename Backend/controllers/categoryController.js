@@ -1,4 +1,5 @@
 const Category = require('../models/Category');
+const Product = require('../models/Product');
 const { NotFoundError, BadRequestError } = require('../utils/customErrors');
 
 // @desc    Get all categories
@@ -99,6 +100,15 @@ const deleteCategory = async (req, res, next) => {
     const category = await Category.findById(req.params.id);
     if (!category) {
       throw new NotFoundError('Category not found');
+    }
+
+    const associatedProductsCount = await Product.countDocuments({ category: req.params.id });
+    if (associatedProductsCount > 0) {
+      throw new BadRequestError(
+        req.headers['accept-language']?.includes('ar') || req.query.lang === 'ar'
+          ? 'لا يمكن حذف الفئة: هناك منتجات تابعة لهذه الفئة حالياً'
+          : 'Cannot delete category: products are still assigned to this category'
+      );
     }
 
     await category.deleteOne();
