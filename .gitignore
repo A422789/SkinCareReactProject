@@ -3,7 +3,16 @@ node_modules/
 dist/
 .env
 .env.local
+
+# WhatsApp & Runtime Caches
 Backend/logs/
+Backend/whatsapp_session/
+Backend/.wwebjs_cache/
+
+# Cypress & IDEs
+cypress/screenshots/
+cypress/videos/
 .vscode/
 .idea/
 .gemini/
+
