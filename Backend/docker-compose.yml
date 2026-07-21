@@ -10,8 +10,6 @@ services:
     env_file:
       - .env
     volumes:
-      # Persist WhatsApp session so you don't need to scan QR on every restart
-      - whatsapp_session:/app/whatsapp_session
       # Persist server logs
       - logs:/app/logs
     environment:
@@ -19,7 +17,5 @@ services:
       - CHROMIUM_PATH=/usr/bin/chromium
 
 volumes:
-  whatsapp_session:
-    driver: local
   logs:
     driver: local

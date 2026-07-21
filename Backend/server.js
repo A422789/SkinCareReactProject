@@ -15,6 +15,7 @@ const paymentTypeRoutes = require('./routes/paymentTypeRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const messageRoutes = require('./routes/messageRoutes');
+const whatsappRoutes = require('./routes/whatsappRoutes');
 const { initWhatsApp } = require('./utils/whatsapp');
 const logger = require('./utils/logger');
 const { globalLimiter, authLimiter } = require('./middleware/rateLimiter');
@@ -108,6 +109,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
 
 // Base Route
 app.get('/', (req, res) => {

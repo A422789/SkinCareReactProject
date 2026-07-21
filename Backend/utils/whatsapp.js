@@ -1,7 +1,7 @@
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, RemoteAuth } = require('whatsapp-web.js');
+const { MongoStore } = require('wwebjs-mongo');
+const mongoose = require('mongoose');
 const qrcode = require('qrcode');
-const fs = require('fs');
-const path = require('path');
 
 const logger = require('./logger');
 
@@ -9,11 +9,11 @@ let client = null;
 let currentQR = null;
 let isReady = false;
 
-const sessionPath = path.join(__dirname, '../whatsapp_session');
-
-// Initialize WhatsApp client with local persistence
+// Initialize WhatsApp client with MongoDB remote persistence
 const initWhatsApp = async () => {
   try {
+    const store = new MongoStore({ mongoose: mongoose });
+
     const puppeteerOptions = {
       headless: true,
       args: [
@@ -46,11 +46,14 @@ const initWhatsApp = async () => {
     }
 
     client = new Client({
-      authStrategy: new LocalAuth({
-        dataPath: sessionPath
+      authStrategy: new RemoteAuth({
+        clientId: 'skincare_whatsapp',
+        store: store,
+        backupSyncIntervalMs: 300000, // Backup session every 5 minutes
       }),
       puppeteer: puppeteerOptions,
     });
+
 
     client.on('qr', async (qr) => {
       currentQR = qr;
@@ -69,15 +72,9 @@ const initWhatsApp = async () => {
       logger.error(`WhatsApp authentication failed: ${msg}`);
     });
 
-    client.on('disconnected', async (reason) => {
+    client.on('disconnected', (reason) => {
       isReady = false;
-      logger.warn(`WhatsApp client disconnected: ${reason}`);
-      try {
-        fs.rmSync(sessionPath, { recursive: true, force: true });
-        logger.info('Cleared local WhatsApp session data.');
-      } catch (err) {
-        logger.error(`Error clearing session data: ${err.message}`);
-      }
+      logger.warn(`WhatsApp client disconnected: ${reason}. Session is persisted in MongoDB.`);
     });
 
     await client.initialize();

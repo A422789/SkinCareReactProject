@@ -2,11 +2,20 @@ const request = require('supertest');
 const app = require('../server');
 const mongoose = require('mongoose');
 
+// Mock WhatsApp to avoid real message sending during tests
+jest.mock('../utils/whatsapp', () => ({
+  initWhatsApp: jest.fn(),
+  sendWhatsAppMessage: jest.fn().mockResolvedValue(true),
+  getQRCodeDataURL: jest.fn().mockResolvedValue(null),
+  getStatus: jest.fn().mockReturnValue({ isReady: false, hasQR: false }),
+}));
+
 describe('Messages API Integration Tests', () => {
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@skincareproject.com';
   const adminPassword = process.env.ADMIN_PASSWORD || 'x7K9$vP2mB!w8Z*qQ_4y';
   let token;
   let createdMessageId;
+
 
   beforeAll(async () => {
     // Authenticate admin to get token for protected routes
