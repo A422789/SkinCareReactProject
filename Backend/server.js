@@ -31,6 +31,9 @@ connectDB().then(() => {
 
 const app = express();
 
+// Trust Railway's reverse proxy for correct IP detection (required for rate limiting)
+app.set('trust proxy', 1);
+
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [process.env.DASHBOARD_URL, process.env.WEBPAGE_URL].filter(Boolean)
   : ['http://localhost:5173', 'http://localhost:5174',];

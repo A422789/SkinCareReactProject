@@ -12,6 +12,14 @@ const sessionPath = '/app/whatsapp_session';
 // Initialize WhatsApp client with local disk persistence
 const initWhatsApp = async () => {
   try {
+    // Remove Chromium SingletonLock to prevent "profile in use" errors on container restart
+    const fs = require('fs');
+    const lockFile = `${sessionPath}/session/SingletonLock`;
+    if (fs.existsSync(lockFile)) {
+      fs.unlinkSync(lockFile);
+      logger.info('Removed stale Chromium SingletonLock file.');
+    }
+
     const puppeteerOptions = {
       headless: true,
       args: [
