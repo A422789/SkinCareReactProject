@@ -55,8 +55,5 @@ ENV CHROMIUM_PATH=/usr/bin/chromium
 # Expose the API port
 EXPOSE 5000
 
-# Persist server logs outside the container filesystem
-VOLUME ["/app/logs"]
-
 # Start the server
 CMD ["node", "server.js"]
