@@ -1,0 +1,94 @@
+name: CI — Run All Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Job 1: Backend Tests (Jest + Supertest)
+  # ─────────────────────────────────────────────
+  backend-tests:
+    name: Backend Tests (Jest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: Backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Backend
+        run: npm install
+
+      - name: Run tests
+        working-directory: Backend
+        env:
+          NODE_ENV: test
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          SALT_ROUNDS: 10
+        run: npm test
+
+  # ─────────────────────────────────────────────
+  # Job 2: WebPage Tests (Vitest)
+  # ─────────────────────────────────────────────
+  webpage-tests:
+    name: WebPage Tests (Vitest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: Frontend/WebPage/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Frontend/WebPage
+        run: npm install
+
+      - name: Run tests
+        working-directory: Frontend/WebPage
+        run: npm test
+
+  # ─────────────────────────────────────────────
+  # Job 3: Dashboard Tests (Vitest)
+  # ─────────────────────────────────────────────
+  dashboard-tests:
+    name: Dashboard Tests (Vitest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: Frontend/Dashboard/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Frontend/Dashboard
+        run: npm install
+
+      - name: Run tests
+        working-directory: Frontend/Dashboard
+        run: npm test
