@@ -8,14 +8,15 @@ const {
   deletePaymentType,
 } = require('../controllers/paymentTypeController');
 const { protect } = require('../middleware/authMiddleware');
+const { demoGuard } = require('../middleware/demoMiddleware');
 
 // Public routes
 router.get('/', getPaymentTypes);
 router.get('/:id', getPaymentTypeById);
 
 // Protected routes (Admin-only CRUD operations)
-router.post('/', protect, createPaymentType);
-router.put('/:id', protect, updatePaymentType);
-router.delete('/:id', protect, deletePaymentType);
+router.post('/', protect, demoGuard, createPaymentType);
+router.put('/:id', protect, demoGuard, updatePaymentType);
+router.delete('/:id', protect, demoGuard, deletePaymentType);
 
 module.exports = router;

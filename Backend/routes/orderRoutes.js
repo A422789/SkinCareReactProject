@@ -8,6 +8,7 @@ const {
   deleteOrder,
 } = require('../controllers/orderController');
 const { protect } = require('../middleware/authMiddleware');
+const { demoGuard } = require('../middleware/demoMiddleware');
 
 // Public route to place orders (checkout)
 router.post('/', createOrder);
@@ -15,7 +16,7 @@ router.post('/', createOrder);
 // Protected routes (Admin only)
 router.get('/', protect, getOrders);
 router.get('/:id', protect, getOrderById);
-router.put('/:id', protect, updateOrder);
-router.delete('/:id', protect, deleteOrder);
+router.put('/:id', protect, demoGuard, updateOrder);
+router.delete('/:id', protect, demoGuard, deleteOrder);
 
 module.exports = router;

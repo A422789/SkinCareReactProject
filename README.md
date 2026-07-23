@@ -7,6 +7,12 @@ A premium, production-ready Headless E-Commerce & Content Management System (CMS
 - ⚙️ **Admin Dashboard:** [https://skin-care-react-project-h8cw.vercel.app](https://skin-care-react-project-h8cw.vercel.app)
 - 📡 **Production API Backend (Railway):** [https://skincarereactproject-production.up.railway.app](https://skincarereactproject-production.up.railway.app)
 
+### 🔒 Demo Sandbox Login Credentials
+To safely explore the Admin Dashboard, use the following credentials:
+* **Email:** `demo@skincareproject.com`
+* **Password:** `demo1234`
+*(Note: Database writes/modifications are disabled when logged in under the demo sandbox account).*
+
 > [!NOTE]
 > This project is the first task completed during training at **CodeAlpha**. It has been successfully moved to production for a real client, with all features, payment instructions, bilingual structures, and WhatsApp automation gateways tailored to the client's specifications.
 

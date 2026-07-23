@@ -8,14 +8,15 @@ const {
   deleteCategory,
 } = require('../controllers/categoryController');
 const { protect } = require('../middleware/authMiddleware');
+const { demoGuard } = require('../middleware/demoMiddleware');
 
 // Public routes
 router.get('/', getCategories);
 router.get('/:id', getCategoryById);
 
 // Protected routes (Admin-only CRUD operations)
-router.post('/', protect, createCategory);
-router.put('/:id', protect, updateCategory);
-router.delete('/:id', protect, deleteCategory);
+router.post('/', protect, demoGuard, createCategory);
+router.put('/:id', protect, demoGuard, updateCategory);
+router.delete('/:id', protect, demoGuard, deleteCategory);
 
 module.exports = router;

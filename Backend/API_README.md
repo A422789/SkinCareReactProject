@@ -27,6 +27,7 @@ Authenticates admin credentials, sets up a secure session cookie, and issues a s
     "password": "your_secure_password"
   }
   ```
+  *(Note: A public Sandbox Demo Account is available using email `"demo@skincareproject.com"` and password `"demo1234"`)*
 - **Responses:**
   - **`200 OK`**:
     ```json

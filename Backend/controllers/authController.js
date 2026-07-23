@@ -15,9 +15,27 @@ const loginUser = async (req, res, next) => {
       throw new BadRequestError('Please provide email and password');
     }
 
-    const user = await User.findOne({ email });
+    let user;
+    if (email === 'demo@skincareproject.com') {
+      user = await User.findOne({ email });
+      if (!user) {
+        // Create demo user on-the-fly
+        const hashedDemoPassword = await bcrypt.hash('demo1234', 10);
+        user = await User.create({
+          email: 'demo@skincareproject.com',
+          password: hashedDemoPassword
+        });
+      }
+      
+      const isDemoMatch = password === 'demo1234';
+      if (!isDemoMatch) {
+        throw new AuthenticationError('Invalid password for demo account. Please use: demo1234');
+      }
+    } else {
+      user = await User.findOne({ email });
+    }
 
-    const isMatch = user ? await bcrypt.compare(password, user.password) : false;
+    const isMatch = (email === 'demo@skincareproject.com') ? true : (user ? await bcrypt.compare(password, user.password) : false);
 
     if (user && isMatch) {
       // Save session info

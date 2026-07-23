@@ -9,6 +9,7 @@ const {
 } = require('../controllers/settingsController');
 const { protect } = require('../middleware/authMiddleware');
 const { upload } = require('../middleware/uploadMiddleware');
+const { demoGuard } = require('../middleware/demoMiddleware');
 
 // Multer fields for all possible image uploads in settings
 const settingsUploadFields = upload.fields([
@@ -24,11 +25,11 @@ const singleTestimonialUpload = upload.single('screenshot');
 
 // All routes are private (Admin only)
 router.get('/', getSettings);
-router.put('/', protect, settingsUploadFields, updateSettings);
+router.put('/', protect, demoGuard, settingsUploadFields, updateSettings);
 
 // Testimonials CRUD Routes
-router.post('/testimonials', protect, singleTestimonialUpload, addTestimonial);
-router.put('/testimonials/:id', protect, singleTestimonialUpload, updateTestimonial);
-router.delete('/testimonials/:id', protect, deleteTestimonial);
+router.post('/testimonials', protect, demoGuard, singleTestimonialUpload, addTestimonial);
+router.put('/testimonials/:id', protect, demoGuard, singleTestimonialUpload, updateTestimonial);
+router.delete('/testimonials/:id', protect, demoGuard, deleteTestimonial);
 
 module.exports = router;
