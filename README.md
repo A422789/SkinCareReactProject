@@ -18,6 +18,21 @@ To safely explore the Admin Dashboard, use the following credentials:
 
 ---
 
+## 🎥 System Walkthrough & Visual Showcase
+
+Below is a walkthrough showing the storefront order checkout flow in Arabic (العربية) and reviewing the newly generated order record inside the Admin Dashboard:
+
+### 1. E-Commerce Order Flow Walkthrough
+![Storefront Order Flow Checkouts Video](./docs_media/storefront_order_flow.webp)
+
+### 2. Form Submissions & Management Panel
+- **Storefront Success Screen:**
+  ![Order Success Page](./docs_media/order_success_page.png)
+- **Admin Dashboard Order Details:**
+  ![Admin Dashboard Order Details](./docs_media/admin_order_details.png)
+
+---
+
 ## 🏛️ Project Directory Structure & Connections
 
 To navigate between different areas of the platform, refer to these specialized documents:
