@@ -12,7 +12,10 @@ const settingsSchema = new mongoose.Schema(
       phone: { type: String },
       whatsapp: { type: String },
       instagram: { type: String },
-      location: { type: String },
+      location: {
+        en: { type: String },
+        ar: { type: String },
+      },
     },
     about: {
       sec1Title: {

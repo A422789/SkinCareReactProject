@@ -52,7 +52,7 @@ export default function ContactUsPage() {
     }
   };
 
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const contactMethods = [
     {
@@ -145,7 +145,9 @@ export default function ContactUsPage() {
               </div>
               <div>
                 <h3 className="text-sm font-medium mb-1" style={{ color: 'var(--muted-foreground)' }}>{t('ourStore')}</h3>
-                <p className="font-semibold" style={{ color: 'var(--foreground)', margin: 0 }}>{contactInfo.location || storeSettings.contact.location}</p>
+                <p className="font-semibold" style={{ color: 'var(--foreground)', margin: 0 }}>
+                  {contactInfo?.location?.[language] || contactInfo?.location?.en || contactInfo?.location}
+                </p>
               </div>
             </motion.div>
           </div>

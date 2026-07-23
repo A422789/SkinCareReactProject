@@ -52,11 +52,68 @@ export function SettingsProvider({ children }) {
     if (settings) {
       const storeName = settings.name?.[language] || settings.name?.en || 'HE SkinCare';
       document.title = storeName;
+      
+      const resolvedLocation = settings.contact?.location?.[language] || settings.contact?.location?.en || settings.contact?.location;
+      console.log("Resolved Location before rendering:", resolvedLocation);
     }
   }, [settings, language]);
 
+  const [translatedCategories, setTranslatedCategories] = useState([]);
+
+  // Client-side dynamic translator helper
+  const translateToArabicClient = async (text) => {
+    if (!text || typeof text !== 'string' || !text.trim()) return '';
+    try {
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ar&dt=t&q=${encodeURIComponent(text)}`;
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data[0]) return data[0].map(x => x[0]).join('');
+      }
+      return text;
+    } catch (err) {
+      console.error('Client translation failed:', err);
+      return text;
+    }
+  };
+
+  useEffect(() => {
+    const translateAllCategories = async () => {
+      if (!categories || categories.length === 0) return;
+
+      if (language === 'ar') {
+        const translatedList = await Promise.all(
+          categories.map(async (cat) => {
+            const currentName = typeof cat.name === 'object' ? (cat.name.ar || cat.name.en) : cat.name;
+            const currentDescription = typeof cat.description === 'object' ? (cat.description.ar || cat.description.en) : cat.description;
+            
+            const translatedName = await translateToArabicClient(currentName);
+            const translatedDesc = currentDescription ? await translateToArabicClient(currentDescription) : '';
+
+            return {
+              ...cat,
+              name: translatedName,
+              description: translatedDesc
+            };
+          })
+        );
+        setTranslatedCategories(translatedList);
+      } else {
+        // En translation fallback
+        const formattedList = categories.map((cat) => ({
+          ...cat,
+          name: typeof cat.name === 'object' ? (cat.name.en || cat.name.ar) : cat.name,
+          description: typeof cat.description === 'object' ? (cat.description.en || cat.description.ar) : cat.description
+        }));
+        setTranslatedCategories(formattedList);
+      }
+    };
+
+    translateAllCategories();
+  }, [categories, language]);
+
   return (
-    <SettingsContext.Provider value={{ settings, products, categories, isLoading, refetchSettings: fetchGlobalData }}>
+    <SettingsContext.Provider value={{ settings, products, categories: translatedCategories, isLoading, refetchSettings: fetchGlobalData }}>
       {children}
     </SettingsContext.Provider>
   );

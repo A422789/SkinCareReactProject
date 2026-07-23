@@ -9,7 +9,7 @@ import { useSettings } from '../context/SettingsContext'
 export default function CartPage() {
   const { items, updateQuantity, removeItem, subtotal } = useCart()
   const { t, language } = useLanguage()
-  const { categories } = useSettings()
+  const { settings, categories } = useSettings()
 
   const getLocalizedValue = (field) => {
     if (!field) return ''
@@ -33,7 +33,7 @@ export default function CartPage() {
 
       {items.length === 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', padding: '4rem 0' }}>
-          <img src={`${import.meta.env.BASE_URL}images/logo.png`} alt="HE Logo" style={{ height: '6rem', width: 'auto', objectFit: 'contain' }} />
+          <img src={settings?.logoUrl} alt="Store Logo" style={{ height: '6rem', width: 'auto', objectFit: 'contain' }} />
           <p style={{ color: 'var(--muted-foreground)' }}>{language === 'ar' ? 'سلتك فارغة.' : 'Your bag is empty.'}</p>
           <Link
             to="/shop"

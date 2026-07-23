@@ -5,11 +5,13 @@ import { Check, ChevronLeft, CreditCard } from 'lucide-react';
 import { useCart } from '../lib/cart-context';
 import { formatPrice } from '../lib/utils';
 import { useLanguage } from '../context/LanguageContext';
+import { useSettings } from '../context/SettingsContext';
 
 const steps = ['Contact', 'Delivery', 'Review'];
 
 export default function CheckoutPage() {
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
+  const { settings } = useSettings();
   const { items, subtotal, clearCart } = useCart();
   const [step, setStep] = useState(0);
   const [confirmed, setConfirmed] = useState(false);
@@ -49,13 +51,13 @@ export default function CheckoutPage() {
   function validateStep(current) {
     const next = {};
     if (current === 0) {
-      if (!form.name.trim()) next.name = 'Please enter your full name.';
+      if (!form.name.trim()) next.name = t('validationName');
       if (!form.phone.trim() || form.phone.replace(/\D/g, '').length < 7)
-        next.phone = 'Please enter a valid phone number.';
+        next.phone = t('validationPhone');
     }
     if (current === 1) {
-      if (!form.address.trim()) next.address = 'Please enter your street address.';
-      if (!form.city.trim()) next.city = 'Please enter your city.';
+      if (!form.address.trim()) next.address = t('validationAddress');
+      if (!form.city.trim()) next.city = t('validationCity');
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -154,7 +156,7 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <main style={{ margin: '0 auto', display: 'flex', maxWidth: '32rem', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', padding: '6rem 1rem', textAlign: 'center' }}>
-        <img src={`${import.meta.env.BASE_URL}images/logo.png`} alt="HE Logo" style={{ height: '6rem', width: 'auto', objectFit: 'contain' }} />
+        <img src={settings?.logoUrl || `${import.meta.env.BASE_URL}images/logo.png`} alt="Store Logo" style={{ height: '6rem', width: 'auto', objectFit: 'contain' }} />
         <p style={{ color: 'var(--muted-foreground)' }}>Your bag is empty — add a ritual before checkout.</p>
         <Link
           to="/shop"
@@ -176,7 +178,7 @@ export default function CheckoutPage() {
         transition={{ duration: 0.6 }}
         style={{ marginBottom: '2.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem', textAlign: 'center' }}
       >
-        <h1 className="font-serif" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', color: 'var(--foreground)' }}>Checkout</h1>
+        <h1 className="font-serif" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', color: 'var(--foreground)' }}>{t('checkout')}</h1>
         <ol style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', listStyle: 'none', padding: 0, margin: 0 }} aria-label="Checkout progress">
           {steps.map((label, i) => (
             <li key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -206,7 +208,7 @@ export default function CheckoutPage() {
                   color: i <= step ? 'var(--foreground)' : 'var(--muted-foreground)',
                 }}
               >
-                {label}
+                {t(label.toLowerCase())}
               </span>
               {i < steps.length - 1 && (
                 <span aria-hidden="true" style={{ height: '1px', width: '2rem', backgroundColor: 'var(--border)' }} />
@@ -228,11 +230,11 @@ export default function CheckoutPage() {
                 transition={{ duration: 0.35 }}
                 style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
               >
-                <h2 className="font-serif" style={{ fontSize: '1.5rem', color: 'var(--foreground)' }}>Contact Details</h2>
-                <Field label="Full Name" id="name" value={form.name} onChange={(v) => update('name', v)} placeholder="Amira Khalil" error={errors.name} autoComplete="name" />
-                <Field label="Phone Number" id="phone" type="tel" value={form.phone} onChange={(v) => update('phone', v)} placeholder="+1 555 000 1234" error={errors.phone} autoComplete="tel" />
+                <h2 className="font-serif" style={{ fontSize: '1.5rem', color: 'var(--foreground)' }}>{t('contactDetails')}</h2>
+                <Field label={t('fullName')} id="name" value={form.name} onChange={(v) => update('name', v)} placeholder="Amira Khalil" error={errors.name} autoComplete="name" />
+                <Field label={t('phoneNumber')} id="phone" type="tel" value={form.phone} onChange={(v) => update('phone', v)} placeholder="+1 555 000 1234" error={errors.phone} autoComplete="tel" />
                 <button type="button" onClick={handleNext} style={{ marginTop: '0.5rem', borderRadius: '0.375rem', backgroundColor: 'var(--gold)', padding: '1rem', fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--primary-foreground)', border: 'none', cursor: 'pointer', transition: 'opacity 0.2s' }}>
-                  Continue to Delivery
+                  {t('continueToDelivery')}
                 </button>
               </motion.div>
             )}
@@ -246,14 +248,14 @@ export default function CheckoutPage() {
                 transition={{ duration: 0.35 }}
                 style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
               >
-                <h2 className="font-serif" style={{ fontSize: '1.5rem', color: 'var(--foreground)' }}>Delivery Address</h2>
-                <Field label="Street Address" id="address" value={form.address} onChange={(v) => update('address', v)} placeholder="12 Jasmine Lane, Apt 4" error={errors.address} autoComplete="street-address" />
-                <Field label="City" id="city" value={form.city} onChange={(v) => update('city', v)} placeholder="Cairo" error={errors.city} autoComplete="address-level2" />
-                <Field label="Delivery Notes (Optional)" id="notes" value={form.notes} onChange={(v) => update('notes', v)} placeholder="Leave at the front desk" />
-                
+                <h2 className="font-serif" style={{ fontSize: '1.5rem', color: 'var(--foreground)' }}>{t('deliveryAddress')}</h2>
+                <Field label={t('streetAddress')} id="address" value={form.address} onChange={(v) => update('address', v)} placeholder="12 Jasmine Lane, Apt 4" error={errors.address} autoComplete="street-address" />
+                <Field label={t('city')} id="city" value={form.city} onChange={(v) => update('city', v)} placeholder="Cairo" error={errors.city} autoComplete="address-level2" />
+                <Field label={t('deliveryNotes')} id="notes" value={form.notes} onChange={(v) => update('notes', v)} placeholder={t('deliveryNotesPlaceholder')} />
+
                 {paymentTypes.length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    <label style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--muted-foreground)' }}>Payment Method</label>
+                    <label style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--muted-foreground)' }}>{t('paymentMethod')}</label>
                     <select
                       value={selectedPaymentId}
                       onChange={(e) => setSelectedPaymentId(e.target.value)}
@@ -276,7 +278,7 @@ export default function CheckoutPage() {
                     {selectedPayment && selectedPayment.instructions && (
                       <div style={{ padding: '1rem', borderRadius: '0.5rem', backgroundColor: 'var(--pearl)', border: '1px dashed var(--gold)', marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--foreground)', whiteSpace: 'pre-line' }}>
                         <div style={{ fontWeight: 600, color: 'var(--gold)', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <CreditCard size={14} /> Payment Instructions:
+                          <CreditCard size={14} /> {t('paymentInstructions')}
                         </div>
                         {selectedPayment.instructions}
                       </div>
@@ -286,10 +288,10 @@ export default function CheckoutPage() {
 
                 <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.75rem' }}>
                   <button type="button" onClick={() => setStep(0)} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', borderRadius: '0.375rem', border: '1px solid var(--border)', padding: '1rem 1.5rem', fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--muted-foreground)', background: 'none', cursor: 'pointer', transition: 'all 0.2s' }}>
-                    <ChevronLeft size={14} />Back
+                    <ChevronLeft size={14} />{t('back')}
                   </button>
                   <button type="button" onClick={handleNext} style={{ flex: 1, borderRadius: '0.375rem', backgroundColor: 'var(--gold)', padding: '1rem', fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--primary-foreground)', border: 'none', cursor: 'pointer', transition: 'opacity 0.2s' }}>
-                    Review Order
+                    {t('reviewOrder')}
                   </button>
                 </div>
               </motion.div>
@@ -304,14 +306,14 @@ export default function CheckoutPage() {
                 transition={{ duration: 0.35 }}
                 style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
               >
-                <h2 className="font-serif" style={{ fontSize: '1.5rem', color: 'var(--foreground)' }}>Review Your Order</h2>
+                <h2 className="font-serif" style={{ fontSize: '1.5rem', color: 'var(--foreground)' }}>{t('reviewYourOrder')}</h2>
                 <dl style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', borderRadius: '0.5rem', backgroundColor: 'rgba(239,230,216,0.6)', padding: '1.25rem', fontSize: '0.875rem', margin: 0 }}>
                   {[
-                    { label: 'Name', value: form.name },
-                    { label: 'Phone', value: form.phone },
-                    { label: 'Address', value: `${form.address}, ${form.city}` },
-                    ...(form.notes ? [{ label: 'Notes', value: form.notes }] : []),
-                    { label: 'Payment', value: selectedPayment ? selectedPayment.name : 'Cash on Delivery' },
+                    { label: t('name'), value: form.name },
+                    { label: t('phone'), value: form.phone },
+                    { label: t('address'), value: `${form.address}, ${form.city}` },
+                    ...(form.notes ? [{ label: t('deliveryNotes'), value: form.notes }] : []),
+                    { label: t('payment'), value: selectedPayment ? selectedPayment.name : 'Cash on Delivery' },
                   ].map((row) => (
                     <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
                       <dt style={{ color: 'var(--muted-foreground)' }}>{row.label}</dt>
@@ -321,7 +323,7 @@ export default function CheckoutPage() {
                 </dl>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                   <button type="button" onClick={() => setStep(1)} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', borderRadius: '0.375rem', border: '1px solid var(--border)', padding: '1rem 1.5rem', fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--muted-foreground)', background: 'none', cursor: 'pointer', transition: 'all 0.2s' }}>
-                    <ChevronLeft size={14} />Back
+                    <ChevronLeft size={14} />{t('back')}
                   </button>
                   <motion.button
                     type="button"
@@ -330,7 +332,7 @@ export default function CheckoutPage() {
                     onClick={handlePlaceOrder}
                     style={{ flex: 1, borderRadius: '0.375rem', backgroundColor: 'var(--gold)', padding: '1rem', fontSize: '0.75rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: 'var(--primary-foreground)', boxShadow: '0 14px 30px -12px rgba(176,141,87,0.7)', border: 'none', cursor: 'pointer', transition: 'opacity 0.2s', opacity: isSubmittingOrder ? 0.7 : 1 }}
                   >
-                    {isSubmittingOrder ? 'Placing Order...' : 'Place Order'}
+                    {isSubmittingOrder ? t('placingOrder') : t('placeOrder')}
                   </motion.button>
                 </div>
               </motion.div>
@@ -343,7 +345,7 @@ export default function CheckoutPage() {
           aria-label="Order summary"
           className="checkout-summary"
         >
-          <h2 className="font-serif" style={{ fontSize: '1.25rem', color: 'var(--foreground)' }}>Your Order</h2>
+          <h2 className="font-serif" style={{ fontSize: '1.25rem', color: 'var(--foreground)' }}>{t('yourOrder')}</h2>
           <ul style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '1rem', listStyle: 'none', padding: '0 0 1rem 0', margin: 0 }}>
             {items.map((item) => {
               const productName = item.product.name && typeof item.product.name === 'object'
@@ -361,7 +363,7 @@ export default function CheckoutPage() {
                   </div>
                   <div style={{ display: 'flex', flex: 1, flexDirection: 'column' }}>
                     <span className="font-serif" style={{ fontSize: '0.875rem', color: 'var(--foreground)' }}>{productName}</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>Qty {item.quantity}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--muted-foreground)' }}>{t('qty')} {item.quantity}</span>
                   </div>
                   <span style={{ fontSize: '0.875rem', color: 'var(--gold)' }}>
                     {formatPrice(item.product.price * item.quantity)}
@@ -372,14 +374,14 @@ export default function CheckoutPage() {
           </ul>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.875rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--muted-foreground)' }}>
-              <span>Subtotal</span><span>{formatPrice(subtotal)}</span>
+              <span>{t('subtotal')}</span><span>{formatPrice(subtotal)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--muted-foreground)' }}>
-              <span>Shipping</span><span style={{ color: 'var(--gold)' }}>Complimentary</span>
+              <span>{t('shipping')}</span><span style={{ color: 'var(--gold)' }}>{t('complimentary')}</span>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '0.875rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--muted-foreground)' }}>Total</span>
+            <span style={{ fontSize: '0.875rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--muted-foreground)' }}>{t('total')}</span>
             <span className="font-serif" style={{ fontSize: '1.5rem', color: 'var(--foreground)' }}>{formatPrice(subtotal)}</span>
           </div>
         </aside>
@@ -409,7 +411,7 @@ function Field({ label, id, value, onChange, placeholder, error, type = 'text', 
         aria-describedby={error ? `${id}-error` : undefined}
         style={{
           borderRadius: '0.375rem',
-          border: `1px solid ${error ? 'var(--destructive)' : 'var(--border)'}`,
+          border: `1.5px solid ${error ? '#ff3333' : 'var(--border)'}`,
           backgroundColor: 'var(--background)',
           padding: '0.875rem 1rem',
           fontSize: '0.875rem',
@@ -417,11 +419,11 @@ function Field({ label, id, value, onChange, placeholder, error, type = 'text', 
           outline: 'none',
           transition: 'border-color 0.2s, box-shadow 0.2s',
         }}
-        onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px rgba(176,141,87,0.3)'}
+        onFocus={(e) => e.target.style.boxShadow = error ? '0 0 0 2px rgba(255,51,51,0.25)' : '0 0 0 2px rgba(176,141,87,0.3)'}
         onBlur={(e) => e.target.style.boxShadow = 'none'}
       />
       {error && (
-        <p id={`${id}-error`} style={{ fontSize: '0.75rem', color: 'var(--destructive)', margin: 0 }}>
+        <p id={`${id}-error`} style={{ fontSize: '0.75rem', color: '#ff3333', fontWeight: 500, margin: 0 }}>
           {error}
         </p>
       )}

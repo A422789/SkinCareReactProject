@@ -50,7 +50,7 @@ export default function Settings() {
     logoUrl: '',
     name: '',
     nameAr: '',
-    contact: { email: '', phone: '', whatsapp: '', instagram: '', location: '' },
+    contact: { email: '', phone: '', whatsapp: '', instagram: '', location: '', locationAr: '' },
     about: {
       sec1Title: '', sec1TitleAr: '', sec1Subtitle: '', sec1SubtitleAr: '',
       sec2Title: '', sec2TitleAr: '', sec2Subtitle: '', sec2SubtitleAr: '', sec2ImageUrl: '',
@@ -89,7 +89,8 @@ export default function Settings() {
             phone: data.contact?.phone || '',
             whatsapp: data.contact?.whatsapp || '',
             instagram: data.contact?.instagram || '',
-            location: data.contact?.location || '',
+            location: typeof data.contact?.location === 'object' ? (data.contact?.location?.en || '') : (data.contact?.location || ''),
+            locationAr: typeof data.contact?.location === 'object' ? (data.contact?.location?.ar || '') : '',
           },
           about: {
             sec1Title: data.about?.sec1Title?.en || '',
@@ -221,7 +222,13 @@ export default function Settings() {
         en: settings.name,
         ar: settings.nameAr
       },
-      contact: settings.contact,
+      contact: {
+        ...settings.contact,
+        location: {
+          en: settings.contact.location,
+          ar: settings.contact.locationAr
+        }
+      },
       about: {
         sec1Title: { en: settings.about.sec1Title, ar: settings.about.sec1TitleAr },
         sec1Subtitle: { en: settings.about.sec1Subtitle, ar: settings.about.sec1SubtitleAr },
@@ -327,7 +334,7 @@ export default function Settings() {
                   name="name"
                   value={settings.name || ''}
                   onChange={handleChange}
-                  required
+                  required={!settings.nameAr}
                   className="w-full px-4 py-2 rounded-xl outline-none transition-all text-sm text-start" style={inputStyle} {...inputFocusHandlers} />
               </div>
             </div>
@@ -344,6 +351,7 @@ export default function Settings() {
                   name="nameAr"
                   value={settings.nameAr || ''}
                   onChange={handleChange}
+                  required={!settings.name}
                   className="w-full px-4 py-2 rounded-xl outline-none transition-all text-sm text-start" style={inputStyle} {...inputFocusHandlers} />
               </div>
             </div>
@@ -743,11 +751,18 @@ export default function Settings() {
               <input type="text" name="instagram" value={settings.contact.instagram || ''} onChange={(e) => handleChange(e, 'contact')}
                 className="w-full px-4 py-2 rounded-xl outline-none transition-all text-sm text-start" style={inputStyle} {...inputFocusHandlers} />
             </div>
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2">
               <label className="text-sm font-medium flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
-                <MapPin className="w-4 h-4" style={{ color: 'var(--foreground-muted)' }} /> {language === 'ar' ? 'العنوان / الموقع' : 'Location / Address'}
+                <MapPin className="w-4 h-4" style={{ color: 'var(--foreground-muted)' }} /> {language === 'ar' ? 'العنوان (بالإنجليزي)' : 'Location / Address (English)'}
               </label>
-              <input type="text" name="location" value={settings.contact.location || ''} onChange={(e) => handleChange(e, 'contact')} required
+              <input type="text" name="location" value={settings.contact.location || ''} onChange={(e) => handleChange(e, 'contact')} required={!settings.contact.locationAr}
+                className="w-full px-4 py-2 rounded-xl outline-none transition-all text-sm text-start" style={inputStyle} {...inputFocusHandlers} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-2" style={{ color: 'var(--foreground)' }}>
+                <MapPin className="w-4 h-4" style={{ color: 'var(--foreground-muted)' }} /> {language === 'ar' ? 'العنوان (بالعربي)' : 'Location / Address (Arabic)'}
+              </label>
+              <input type="text" name="locationAr" value={settings.contact.locationAr || ''} onChange={(e) => handleChange(e, 'contact')} required={!settings.contact.location}
                 className="w-full px-4 py-2 rounded-xl outline-none transition-all text-sm text-start" style={inputStyle} {...inputFocusHandlers} />
             </div>
           </div>

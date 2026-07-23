@@ -5,6 +5,7 @@ import { useSettings } from '../context/SettingsContext';
 export function SiteFooter() {
   const { t, language } = useLanguage();
   const { settings } = useSettings();
+  console.log("Settings Location:", settings?.contact?.location);
 
   const footerLinks = [
     { href: '/shop', key: 'shop' },
@@ -15,7 +16,6 @@ export function SiteFooter() {
   ];
 
   const storeName = settings?.name?.[language] || settings?.name?.en || 'HE';
-
   return (
     <footer style={{ borderTop: '1px solid var(--border)', backgroundColor: 'var(--pearl)' }}>
       <div style={{ margin: '0 auto', display: 'flex', maxWidth: '72rem', flexDirection: 'column', alignItems: 'center', gap: '2rem', padding: '3.5rem 1rem' }}>
@@ -30,7 +30,7 @@ export function SiteFooter() {
           />
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.6rem', letterSpacing: '0.35em', textTransform: 'uppercase', color: 'var(--muted-foreground)' }}>
             <span style={{ height: '1px', width: '1.5rem', backgroundColor: 'var(--gold)' }} aria-hidden="true" />
-            Splash · Serum · Skincare
+            {language === 'ar' ? 'معطرات · سيروم · العناية بالبشرة' : 'Splash · Serum · Skincare'}
             <span style={{ height: '1px', width: '1.5rem', backgroundColor: 'var(--gold)' }} aria-hidden="true" />
           </span>
         </div>
@@ -54,7 +54,7 @@ export function SiteFooter() {
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1rem 2.5rem', fontSize: '0.75rem', color: 'var(--muted-foreground)', textAlign: 'center', borderTop: '1px dashed var(--border)', paddingTop: '1.5rem', width: '100%', maxWidth: '36rem' }}>
             <span>{t('email')}: <a href={`mailto:${settings.contact.email}`} style={{ color: 'var(--gold)', textDecoration: 'none', fontWeight: 500 }}>{settings.contact.email}</a></span>
             <span>{t('phone')}: <a href={`tel:${settings.contact.phone.replace(/[^0-9+]/g, '')}`} style={{ color: 'var(--gold)', textDecoration: 'none', fontWeight: 500 }}>{settings.contact.phone}</a></span>
-            <span>{t('ourStore')}: <span style={{ color: 'var(--foreground)', fontWeight: 500 }}>{settings.contact.location}</span></span>
+            <span>{t('ourStore')}: <span style={{ color: 'var(--foreground)', fontWeight: 500 }}>{settings.contact.location?.[language] || settings.contact.location?.en || settings.contact.location}</span></span>
           </div>
         )}
 

@@ -4,10 +4,12 @@ import { X, Minus, Plus, Trash2 } from 'lucide-react'
 import { useCart } from '../lib/cart-context'
 import { formatPrice } from '../lib/utils'
 import { useLanguage } from '../context/LanguageContext'
+import { useSettings } from '../context/SettingsContext'
 
 export function CartDrawer() {
   const { items, isOpen, closeCart, updateQuantity, removeItem, subtotal } = useCart()
-  const { language } = useLanguage()
+  const { t, language } = useLanguage()
+  const { settings } = useSettings()
 
   const getLocalizedValue = (field) => {
     if (!field) return ''
@@ -39,7 +41,7 @@ export function CartDrawer() {
             aria-label="Shopping bag"
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', padding: '1.25rem 1.5rem' }}>
-              <h2 className="font-serif" style={{ fontSize: '1.25rem', color: 'var(--foreground)' }}>Your Bag</h2>
+              <h2 className="font-serif" style={{ fontSize: '1.25rem', color: 'var(--foreground)' }}>{t('yourBag')}</h2>
               <button
                 type="button"
                 onClick={closeCart}
@@ -54,14 +56,14 @@ export function CartDrawer() {
 
             {items.length === 0 ? (
               <div style={{ display: 'flex', flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', padding: '0 1.5rem' }}>
-                <img src={`${import.meta.env.BASE_URL}images/logo.png`} alt="HE Logo" style={{ height: '5rem', width: 'auto', objectFit: 'contain' }} />
-                <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>Your bag is empty.</p>
+                <img src={settings?.logoUrl} alt="Store Logo" style={{ height: '5rem', width: 'auto', objectFit: 'contain' }} />
+                <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground)' }}>{t('emptyCart')}</p>
                 <Link
                   to="/shop"
                   onClick={closeCart}
                   style={{ borderRadius: '0.375rem', backgroundColor: 'var(--gold)', padding: '0.75rem 2rem', fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--primary-foreground)', textDecoration: 'none', transition: 'opacity 0.2s' }}
                 >
-                  Shop Now
+                  {t('shopNow')}
                 </Link>
               </div>
             ) : (
@@ -131,7 +133,7 @@ export function CartDrawer() {
 
                 <div style={{ borderTop: '1px solid var(--border)', backgroundColor: 'rgba(239,230,216,0.6)', padding: '1.25rem 1.5rem' }}>
                   <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '0.875rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--muted-foreground)' }}>Subtotal</span>
+                    <span style={{ fontSize: '0.875rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--muted-foreground)' }}>{t('subtotal')}</span>
                     <span className="font-serif" style={{ fontSize: '1.25rem', color: 'var(--foreground)' }}>{formatPrice(subtotal)}</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -140,14 +142,14 @@ export function CartDrawer() {
                       onClick={closeCart}
                       style={{ borderRadius: '0.375rem', backgroundColor: 'var(--gold)', padding: '0.875rem', textAlign: 'center', fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--primary-foreground)', textDecoration: 'none', transition: 'opacity 0.2s' }}
                     >
-                      Checkout
+                      {t('checkout')}
                     </Link>
                     <Link
                       to="/cart"
                       onClick={closeCart}
                       style={{ borderRadius: '0.375rem', border: '1px solid var(--gold)', padding: '0.875rem', textAlign: 'center', fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold)', textDecoration: 'none', transition: 'all 0.2s' }}
                     >
-                      View Bag
+                      {t('viewBag')}
                     </Link>
                   </div>
                 </div>

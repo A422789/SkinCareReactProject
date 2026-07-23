@@ -2,7 +2,7 @@ const Product = require('../models/Product');
 const { uploadToCloudinary } = require('../middleware/uploadMiddleware');
 const { NotFoundError, BadRequestError } = require('../utils/customErrors');
 const cloudinary = require('cloudinary').v2;
-const translateToArabic = require('../utils/translate');
+const { translateBilingual } = require('../utils/translate');
 
 // @desc    Get all products
 // @route   GET /api/products
@@ -66,22 +66,24 @@ const createProduct = async (req, res, next) => {
       imageUrl = req.body.image;
     }
 
-    // Auto-translate missing Arabic fields
-    const translatedNameAr = (name && name.ar) ? name.ar : await translateToArabic(name.en);
-    const translatedTaglineAr = (tagline && tagline.ar) ? tagline.ar : (tagline?.en ? await translateToArabic(tagline.en) : '');
-    const translatedDescriptionAr = (description && description.ar) ? description.ar : (description?.en ? await translateToArabic(description.en) : '');
-    const translatedIngredientsAr = (ingredients && ingredients.ar) ? ingredients.ar : (ingredients?.en ? await translateToArabic(ingredients.en) : '');
-    const translatedHowToUseAr = (howToUse && howToUse.ar) ? howToUse.ar : (howToUse?.en ? await translateToArabic(howToUse.en) : '');
+    // Auto-translate missing language fields (bidirectional: EN→AR or AR→EN)
+    const [translatedName, translatedTagline, translatedDescription, translatedIngredients, translatedHowToUse] = await Promise.all([
+      translateBilingual(name),
+      translateBilingual(tagline),
+      translateBilingual(description),
+      translateBilingual(ingredients),
+      translateBilingual(howToUse),
+    ]);
 
     const product = new Product({
-      name: { en: name.en, ar: translatedNameAr },
-      tagline: { en: tagline?.en || '', ar: translatedTaglineAr },
+      name: translatedName,
+      tagline: translatedTagline,
       category,
       price,
       stock,
-      description: { en: description?.en || '', ar: translatedDescriptionAr },
-      ingredients: { en: ingredients?.en || '', ar: translatedIngredientsAr },
-      howToUse: { en: howToUse?.en || '', ar: translatedHowToUseAr },
+      description: translatedDescription,
+      ingredients: translatedIngredients,
+      howToUse: translatedHowToUse,
       image: imageUrl,
       isNewArrival: isNewArrival === 'true' || isNewArrival === true,
       isBestSeller: isBestSeller === 'true' || isBestSeller === true,
@@ -123,29 +125,23 @@ const updateProduct = async (req, res, next) => {
     } = req.body;
 
     // Update basic fields if they exist with auto-translation fallback
-    if (name) {
-      const translatedNameAr = (name.ar) ? name.ar : await translateToArabic(name.en);
-      product.name = { en: name.en, ar: translatedNameAr };
-    }
-    if (tagline) {
-      const translatedTaglineAr = (tagline.ar) ? tagline.ar : (tagline.en ? await translateToArabic(tagline.en) : '');
-      product.tagline = { en: tagline.en || '', ar: translatedTaglineAr };
-    }
-    if (category) product.category = category;
-    if (price) product.price = price;
-    if (stock !== undefined) product.stock = stock;
-    if (description) {
-      const translatedDescriptionAr = (description.ar) ? description.ar : (description.en ? await translateToArabic(description.en) : '');
-      product.description = { en: description.en || '', ar: translatedDescriptionAr };
-    }
-    if (ingredients) {
-      const translatedIngredientsAr = (ingredients.ar) ? ingredients.ar : (ingredients.en ? await translateToArabic(ingredients.en) : '');
-      product.ingredients = { en: ingredients.en || '', ar: translatedIngredientsAr };
-    }
-    if (howToUse) {
-      const translatedHowToUseAr = (howToUse.ar) ? howToUse.ar : (howToUse.en ? await translateToArabic(howToUse.en) : '');
-      product.howToUse = { en: howToUse.en || '', ar: translatedHowToUseAr };
-    }
+    // Bidirectional auto-translate for each updated bilingual field
+    const fieldsToTranslate = { name, tagline, description, ingredients, howToUse };
+    const translatedFields = {};
+    await Promise.all(
+      Object.entries(fieldsToTranslate).map(async ([key, value]) => {
+        if (value !== undefined) translatedFields[key] = await translateBilingual(value);
+      })
+    );
+
+    if (translatedFields.name)        product.name        = translatedFields.name;
+    if (translatedFields.tagline)     product.tagline     = translatedFields.tagline;
+    if (category)                     product.category    = category;
+    if (price)                        product.price       = price;
+    if (stock !== undefined)          product.stock       = stock;
+    if (translatedFields.description) product.description = translatedFields.description;
+    if (translatedFields.ingredients) product.ingredients = translatedFields.ingredients;
+    if (translatedFields.howToUse)    product.howToUse    = translatedFields.howToUse;
     
     if (isNewArrival !== undefined) {
       product.isNewArrival = isNewArrival === 'true' || isNewArrival === true;

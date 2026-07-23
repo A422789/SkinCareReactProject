@@ -1,7 +1,7 @@
 const Settings = require('../models/Settings');
 const { NotFoundError, BadRequestError } = require('../utils/customErrors');
 const { uploadToCloudinary } = require('../middleware/uploadMiddleware');
-const translate = require('../utils/translate');
+const { translateBilingual } = require('../utils/translate');
 
 // @desc    Get store settings
 // @route   GET /api/settings
@@ -79,51 +79,46 @@ const updateSettings = async (req, res, next) => {
 
     // Update textual properties with translation fallbacks
     if (name) {
-      const nameEn = name.en || '';
-      const nameAr = name.ar && name.ar.trim() ? name.ar : await translate(nameEn);
-      settings.name = { en: nameEn, ar: nameAr };
+      settings.name = await translateBilingual(name);
     }
-    if (contact) settings.contact = contact;
+    if (contact) {
+      const translatedLocation = await translateBilingual(contact.location);
+      if (contact.email !== undefined) settings.contact.email = contact.email;
+      if (contact.phone !== undefined) settings.contact.phone = contact.phone;
+      if (contact.whatsapp !== undefined) settings.contact.whatsapp = contact.whatsapp;
+      if (contact.instagram !== undefined) settings.contact.instagram = contact.instagram;
+      settings.contact.location = translatedLocation;
+    }
     if (about) {
-      const sec1TitleEn = about.sec1Title?.en || '';
-      const sec1TitleAr = about.sec1Title?.ar && about.sec1Title.ar.trim() ? about.sec1Title.ar : await translate(sec1TitleEn);
-
-      const sec1SubtitleEn = about.sec1Subtitle?.en || '';
-      const sec1SubtitleAr = about.sec1Subtitle?.ar && about.sec1Subtitle.ar.trim() ? about.sec1Subtitle.ar : await translate(sec1SubtitleEn);
-
-      const sec2TitleEn = about.sec2Title?.en || '';
-      const sec2TitleAr = about.sec2Title?.ar && about.sec2Title.ar.trim() ? about.sec2Title.ar : await translate(sec2TitleEn);
-
-      const sec2SubtitleEn = about.sec2Subtitle?.en || '';
-      const sec2SubtitleAr = about.sec2Subtitle?.ar && about.sec2Subtitle.ar.trim() ? about.sec2Subtitle.ar : await translate(sec2SubtitleEn);
-
-      const sec3TitleEn = about.sec3Title?.en || '';
-      const sec3TitleAr = about.sec3Title?.ar && about.sec3Title.ar.trim() ? about.sec3Title.ar : await translate(sec3TitleEn);
-
-      const sec3SubtitleEn = about.sec3Subtitle?.en || '';
-      const sec3SubtitleAr = about.sec3Subtitle?.ar && about.sec3Subtitle.ar.trim() ? about.sec3Subtitle.ar : await translate(sec3SubtitleEn);
+      const [sec1Title, sec1Subtitle, sec2Title, sec2Subtitle, sec3Title, sec3Subtitle] = await Promise.all([
+        translateBilingual(about.sec1Title),
+        translateBilingual(about.sec1Subtitle),
+        translateBilingual(about.sec2Title),
+        translateBilingual(about.sec2Subtitle),
+        translateBilingual(about.sec3Title),
+        translateBilingual(about.sec3Subtitle),
+      ]);
 
       settings.about = {
         ...settings.about,
-        sec1Title: { en: sec1TitleEn, ar: sec1TitleAr },
-        sec1Subtitle: { en: sec1SubtitleEn, ar: sec1SubtitleAr },
-        sec2Title: { en: sec2TitleEn, ar: sec2TitleAr },
-        sec2Subtitle: { en: sec2SubtitleEn, ar: sec2SubtitleAr },
-        sec3Title: { en: sec3TitleEn, ar: sec3TitleAr },
-        sec3Subtitle: { en: sec3SubtitleEn, ar: sec3SubtitleAr },
+        sec1Title,
+        sec1Subtitle,
+        sec2Title,
+        sec2Subtitle,
+        sec3Title,
+        sec3Subtitle,
       };
     }
     if (hero) {
-      const titleEn = hero.title?.en || '';
-      const titleAr = hero.title?.ar && hero.title.ar.trim() ? hero.title.ar : await translate(titleEn);
-
-      const subtitleEn = hero.subtitle?.en || '';
-      const subtitleAr = hero.subtitle?.ar && hero.subtitle.ar.trim() ? hero.subtitle.ar : await translate(subtitleEn);
+      const [title, subtitle] = await Promise.all([
+        translateBilingual(hero.title),
+        translateBilingual(hero.subtitle),
+      ]);
 
       settings.hero = {
         ...settings.hero,
-        title: { en: titleEn, ar: titleAr },
-        subtitle: { en: subtitleEn, ar: subtitleAr },
+        title,
+        subtitle,
       };
     }
 
@@ -134,6 +129,7 @@ const updateSettings = async (req, res, next) => {
     const updatedSettings = await settings.save();
     res.status(200).json(updatedSettings);
   } catch (error) {
+    logger.error(`Error updating settings: ${error.message}\nStack: ${error.stack}`);
     next(error);
   }
 };
